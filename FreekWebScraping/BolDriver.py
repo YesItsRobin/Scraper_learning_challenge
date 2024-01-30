@@ -26,7 +26,7 @@ class BolDriver():
         # Accepting cookies
         self.__driver.find_element(By.ID, "js-first-screen-accept-all-button").click()
         self.__driver.find_element(By.XPATH, "/html/body/wsp-modal-window/div[2]/div[2]/wsp-country-language-modal/button").click()
-        self.__cookiesAccepted = True;
+        self.__cookiesAccepted = True
 
     def getNextItem(self):
         xPathString = "//*[@id=\"js_items_content\"]/li"        
