@@ -6,11 +6,11 @@ from Book import Book
 
 class BolDriver():
     __driver = None
-    __cookiesAccepted = False;
+    __cookiesAccepted = False
     __URL = "https://www.bol.com/nl/nl/l/boeken/8299/"
     __item = 1
     __itemsPerPage = 30
-    __page = 1;
+    __page = 1
 
 
     def __init__(self):
