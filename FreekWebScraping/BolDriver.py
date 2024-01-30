@@ -48,7 +48,7 @@ class BolDriver():
         return self.__driver.find_element(By.XPATH, XPATH).text
     
     def __nextPage(self, xPathString):
-        self.__driver.find_element(By.XPATH, "/html/body/div[1]/main/wsp-async-browse/div/div/div[3]/div/div[2]/div/div[5]/ul/li[8]/a").click();
+        self.__driver.find_element(By.XPATH, "/html/body/div[1]/main/wsp-async-browse/div/div/div[3]/div/div[2]/div/div[5]/ul/li[8]/a").click()
         sleep(1)
 
         self.__itemsPerPage = len(self.__driver.find_elements(By.XPATH, xPathString))
