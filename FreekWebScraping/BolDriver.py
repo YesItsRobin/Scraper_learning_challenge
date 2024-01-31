@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from time import sleep  
 from Book import Book
@@ -14,7 +15,10 @@ class BolDriver():
     __page = 1
 
     def __init__(self):
-        self.__driver = webdriver.Chrome(executable_path="C:\\Users\\Dinu\\Downloads\\chromedriver-win64\\chromedriver.exe")
+        options = Options()
+        options.add_argument("-headless")
+
+        self.__driver = webdriver.Chrome(executable_path="C:\\Users\\Dinu\\Downloads\\chromedriver-win64\\chromedriver.exe", options=options)
         self.__driver.get(self.__URL)
         self.accept_cookies()
         atexit.register(self.close_browser)
