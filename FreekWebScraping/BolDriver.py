@@ -7,13 +7,11 @@ import atexit
 class BolDriver():
     __driver = None
     __cookies_accepted = False
-    __URL = "https://www.bol.com/nl/nl/l/boeken/8299/"+"?view=list"
-    __item = 0
-    __items_per_page = 30
+    searchtext = input('Search: ').replace(' ','+')
+    __URL = f'https://www.bol.com/nl/nl/s/?searchtext={searchtext}&view=list'
     __page = 1
 
     def __init__(self):
-        options = Options()
 
         self.__driver = webdriver.Chrome(executable_path="C:\\Users\\Dinu\\Downloads\\chromedriver-win64\\chromedriver.exe")
         self.__driver.get(self.__URL)
@@ -47,7 +45,7 @@ class BolDriver():
             product_info['href'] = self.get_elements_attribute(product_element,".//a[@data-test='product-title']","href")
             product_info['price'] = self.get_elements_attribute(product_element,".//*[@itemprop='price']","content") 
             product_info_list.append(product_info)
-        self.__next_page(x_path_string)
+        self.__next_page()
         return self.get_items(ammount, product_info_list)
 
 
@@ -63,9 +61,7 @@ class BolDriver():
         else:
            return None
     
-    def __next_page(self, x_path_string):
-        self.__items_per_page = len(self.__driver.find_elements(By.XPATH, x_path_string))
-        self.__item = 1
+    def __next_page(self):
         self.__page += 1
         self.__driver.get(f"{self.__URL}&page={self.__page}")
         self.__driver.implicitly_wait(10)
