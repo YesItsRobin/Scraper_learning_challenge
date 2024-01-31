@@ -2,5 +2,5 @@ from BolDriver import *
 
 bolDriver = BolDriver()
 
-for i in range(250):
+for i in range(25):
     print(bolDriver.getNextItem())
