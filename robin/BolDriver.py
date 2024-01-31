@@ -10,7 +10,11 @@ import atexit
 class BolDriver():
     __driver = None
     __cookiesAccepted = False
-    __URL = "https://www.bol.com/nl/nl/l/boeken/8299/"+"?view=list"
+    __URL = "https://www.bol.com/nl/nl/s/?page=1&view=list"
+    __search = "books"
+    __price_min = 0
+    __price_max = 1000
+    __sort = "popularity"
     __item = 0
     __itemsPerPage = 30
     __page = 1
@@ -18,10 +22,21 @@ class BolDriver():
 
     def __init__(self):
         self.__driver = webdriver.Chrome(ChromeDriverManager().install())
-        self.__driver.get(self.__URL)
-        self.acceptCookies()
         atexit.register(self.closeBrowser)
 
+    def go(self):
+        self.__driver.get(self.__URL+f"&searchtext={self.__search}&12194={self.__price_min}-{self.__price_max}&sort={self.__sort}")
+    
+    def filter_price(self, price_min:int, price_max:int):
+        self.__price_min = price_min
+        self.__price_max = price_max
+    
+    def filter_sort(self, sort:str):
+        self.__sort = sort
+    
+    def filter_search(self, search:str):
+        self.__search = search
+        
     def acceptCookies(self):
         if (self.__cookiesAccepted):
             return
@@ -36,6 +51,8 @@ class BolDriver():
 
 
     def getItems(self, ammount:int, product_info_list:list = []):
+        self.go()
+        self.acceptCookies()
         product_elements = self.__driver.find_elements(By.XPATH, '/html/body/div[1]/main/wsp-async-browse/div/div/div[3]/div/div[2]/div/div[4]/div/ul/li')
         # Iterate through each product element and scrape data
         for product_element in product_elements:
@@ -43,11 +60,10 @@ class BolDriver():
                 return product_info_list
             
             product_info = {}
-            
+        
             # Scrape title and href
             product_info['title'] = product_element.find_element_by_css_selector('a.product-title').text
             product_info['href'] = product_element.find_element_by_css_selector('a.product-title').get_attribute('href')
-
             price_element = product_element.find_element_by_css_selector('.promo-price')
             if price_element:
                 product_info['price'] = price_element.text.replace('\n', '.').replace('.-', '.00')
@@ -57,6 +73,7 @@ class BolDriver():
         self.__nextPage()
         return self.getItems(ammount, product_info_list)
         
+    
     def getNextItem(self):
         xPathString = "//*[@id=\"js_items_content\"]/li"
         if (self.__item == 0):

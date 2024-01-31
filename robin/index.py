@@ -1,6 +1,9 @@
 from BolDriver import *
 
 bolDriver = BolDriver()
-items = bolDriver.getItems(50)
+bolDriver.filter_price(15, 18)
+bolDriver.filter_search("python")
+bolDriver.filter_sort("relevance1")
+items = bolDriver.getItems(5)
 for item in items:
     print(item)
