@@ -2,83 +2,76 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from time import sleep  
-from Book import Book
-from Object import Object
 import atexit
-
 
 class BolDriver():
     __driver = None
-    __cookiesAccepted = False
+    __cookies_accepted = False
     __URL = "https://www.bol.com/nl/nl/l/boeken/8299/"+"?view=list"
     __item = 0
-    __itemsPerPage = 30
+    __items_per_page = 30
     __page = 1
-
 
     def __init__(self):
         options = Options()
-        options.add_argument("-headless")
 
-        self.__driver = webdriver.Chrome(executable_path="C:\\Users\\Dinu\\Downloads\\chromedriver-win64\\chromedriver.exe", options=options)
+        self.__driver = webdriver.Chrome(executable_path="C:\\Users\\Dinu\\Downloads\\chromedriver-win64\\chromedriver.exe")
         self.__driver.get(self.__URL)
-        self.acceptCookies()
-        atexit.register(self.closeBrowser)
+        self.accept_cookies()
+        atexit.register(self.close_browser)
 
-    def acceptCookies(self):
-        if (self.__cookiesAccepted):
+    def accept_cookies(self):
+        if self.__cookies_accepted:
             return
-        sleep(0.3)
+        self.__driver.implicitly_wait(15)
 
         # Accepting cookies
         self.__driver.find_element(By.ID, "js-first-screen-accept-all-button").click()
         self.__driver.implicitly_wait(20)
         self.__driver.find_element(By.XPATH, "/html/body/wsp-modal-window/div[2]/div[2]/wsp-country-language-modal/button").click()
         self.__driver.implicitly_wait(20)
-        self.__cookiesAccepted = True
-
-    def getNextItem(self):
-        xPathString = "//*[@id=\"js_items_content\"]/li"
-        if (self.__item == 0):
-            self.__itemsPerPage = len(self.__driver.find_elements(By.XPATH, xPathString))
-            self.__item = 1
-
-        if (self.__item == self.__itemsPerPage):
-            self.__nextPage(xPathString)
+        self.__cookies_accepted = True
 
 
-        xPathString = f"{xPathString}[{self.__item}]"
-        self.__item = self.__item + 1
-        return Object(
-            self.getElementsText(xPathString+"//a[@data-test='product-title']"),
-            self.getElementsContent(xPathString+"//*[@itemprop='price']"),
-            self.getElementsLink(xPathString+"//a[@data-test='product-title']"),
-        )
+    def get_items(self, ammount:int, product_info_list:list = []):
+        x_path_string = "//*[@id=\"js_items_content\"]/li"
+        product_elements = self.__driver.find_elements(By.XPATH, x_path_string)
+        # Iterate through each product element and scrape data
+        for product_element in product_elements:
+            if len(product_info_list) >= ammount:
+                return product_info_list
+            
+            product_info = {}
+            # Scrape title and href
+            product_info['title'] = self.get_elements_attribute(product_element,".//a[@data-test='product-title']","text")
+            product_info['href'] = self.get_elements_attribute(product_element,".//a[@data-test='product-title']","href")
+            product_info['price'] = self.get_elements_attribute(product_element,".//*[@itemprop='price']","content") 
+            product_info_list.append(product_info)
+        self.__next_page(x_path_string)
+        return self.get_items(ammount, product_info_list)
 
-
-    def getElementsText(self, XPATH):
-        return self.__driver.find_element(By.XPATH, XPATH).text
-    
-    def getElementsContent(self, XPATH):
-        return self.__driver.find_element(By.XPATH, XPATH).get_attribute('content')
-    
-    def getElementsLink(self, XPATH):
-        return self.__driver.find_element(By.XPATH, XPATH).get_attribute('href')
-    
-    def getElementsImage(self, XPATH):
-        print(len(self.__driver.find_elements(By.XPATH, XPATH)))
-        return self.__driver.find_elements(By.XPATH, XPATH).get_attribute('src')
 
     
-    def __nextPage(self, xPathString):
-        # self.__driver.find_element(By.XPATH, "/html/body/div[1]/main/wsp-async-browse/div/div/div[3]/div/div[2]/div/div[5]/ul/li[8]/a").click()
-        self.__driver.get(f"{self.__URL}&page={self.__page}")
-        sleep(1)
+    def check_element(self,element,XPATH):
+        l = element.find_elements(By.XPATH, XPATH)
+        self.__driver.implicitly_wait(15)
+        return len(l) > 0
 
-        self.__itemsPerPage = len(self.__driver.find_elements(By.XPATH, xPathString))
+    def get_elements_attribute(self, element, XPATH, attribute):
+        if self.check_element(element,XPATH):
+            return element.find_element(By.XPATH, XPATH).get_attribute(attribute)
+        else:
+           return None
+    
+    def __next_page(self, x_path_string):
+        self.__items_per_page = len(self.__driver.find_elements(By.XPATH, x_path_string))
         self.__item = 1
-        self.__page = self.__page + 1
+        self.__page += 1
+        self.__driver.get(f"{self.__URL}&page={self.__page}")
+        self.__driver.implicitly_wait(10)
     
-    def closeBrowser(self):
+    
+    
+    def close_browser(self):
         self.__driver.close()
         self.__driver.quit()
