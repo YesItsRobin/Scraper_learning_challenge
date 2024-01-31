@@ -1,6 +1,6 @@
 from BolDriver import *
+import time
 
 bolDriver = BolDriver()
-
-for i in range(25):
-    print(bolDriver.getNextItem())
+for i in range(5):
+    print(bolDriver.get_next_item())
