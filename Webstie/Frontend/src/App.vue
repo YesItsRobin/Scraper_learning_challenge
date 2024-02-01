@@ -6,7 +6,6 @@ export default {
   data() {
     return {
       response: null,
-      rerender: 0,
       filter: 'popularity',
       search: '',
     }
@@ -16,9 +15,9 @@ export default {
   },
   methods: {
     searchSubmit() {
+      this.response = undefined
       axios.create({baseURL: "http://localhost:8000/", timeout: 20000}).post("?search=" +this.search +"&amount=12" +"&sort=" +this.filter).then(response => {
         this.response = response.data
-        this.$forceUpdate()
         console.log(this.response)
       }).catch(error => {
         console.log(error)
@@ -26,14 +25,13 @@ export default {
     },
     changeFilter(newFilter) {
       this.filter = newFilter
-      this.rerender++
     }
   }
 }
 </script>
 
 <template>
-  <div class="main m-auto" :key="this.rerender">
+  <div class="main m-auto">
     <header>
       <div>
         <h1 class="fixed-top p-4">
@@ -65,11 +63,10 @@ export default {
       <div class="d-flex flex-wrap justify-content-evenly mt-4 mb-5">
         <list-item 
           v-for="(item, index) in this.response"
-          :image-path="item.image"
           :item-link="item.href"
           :name="item.title"
           :price="item.price"
-          :description="item.description"
+          :description="item.desc"
           class="card mt-3 align-self-star"
           :key="index"
         ></list-item>

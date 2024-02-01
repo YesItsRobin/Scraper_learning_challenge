@@ -5,6 +5,7 @@
                 {{ name }}
                 
             </h5>
+            <hr>
             <div>
                 <p class="card-text">{{ description }}</p>
                 <hr>
