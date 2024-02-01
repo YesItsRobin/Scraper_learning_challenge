@@ -4,42 +4,58 @@ import axios from 'axios';
 
 export default {
   data() {
-    response: null
-    search: String
+    return {
+      response: null,
+      rerender: 0,
+      filter: 'popularity',
+      search: '',
+    }
   },
   components: {
     listItem
   },
   methods: {
     searchSubmit() {
-      if (this.search == undefined) {
-        return;
-      }
-      console.log(this.response)
-      axios.create({baseURL: "http://localhost:8000/", timeout: 5000}).post("?search=" +this.search).then(response => {
+      axios.create({baseURL: "http://localhost:8000/", timeout: 20000}).post("?search=" +this.search +"&amount=12" +"&sort=" +this.filter).then(response => {
         this.response = response.data
         this.$forceUpdate()
         console.log(this.response)
       }).catch(error => {
         console.log(error)
       })
+    },
+    changeFilter(newFilter) {
+      this.filter = newFilter
+      this.rerender++
     }
   }
 }
 </script>
 
 <template>
-  <div class="main m-auto">
+  <div class="main m-auto" :key="this.rerender">
     <header>
       <div>
         <h1 class="fixed-top p-4">
-          <img width="70" class="img" src="./assets/logo.webp">
+          <img width="70" class="img" src="./assets/logo.jpeg">
           Boller.com
         </h1>
       </div>
       <div class="container search-container">
         <div class="row">
-          <input class="form-control search-bar float-left col-8" v-model="search" placeholder="Search...."/>
+          <div class="col-8 input-group">
+            <input class="form-control search-bar float-left w-50" v-model="search" placeholder="Search...."/>
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              {{ this.filter }} 
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" @click="changeFilter('popularity')">popularity</a></li>
+              <li><a class="dropdown-item" @click="changeFilter('price low to high')">price low to high</a></li>
+              <li><a class="dropdown-item" @click="changeFilter('price hight to low')">price hight to low</a></li>
+              <li><a class="dropdown-item" @click="changeFilter('realease date')">realease date</a></li>
+              <li><a class="dropdown-item" @click="changeFilter('most wanted')">Most wanted</a></li>
+            </ul>
+          </div>
           <div class="col"></div>
           <button class="btn btn-primary float-right col-4 ml-2" @click="searchSubmit">Search</button>
         </div>
@@ -50,10 +66,11 @@ export default {
         <list-item 
           v-for="(item, index) in this.response"
           :image-path="item.image"
-          item-link="https://www.bol.com/nl/nl/p/lg-32lq63006la-32-inch-full-hd-led-2022/9300000074859721/?bltgh=salXVqHQPv58dV9OcyRMxA.4_29.35.ProductTitle"
-          name="LG 32LQ63006LA - 32 inch - Full HD LED - 2022"
-          price="€229,95"
-          class="card mt-3"
+          :item-link="item.href"
+          :name="item.title"
+          :price="item.price"
+          :description="item.description"
+          class="card mt-3 align-self-star"
           :key="index"
         ></list-item>
       </div>
@@ -68,6 +85,10 @@ export default {
   border-width: 2px;
   font-size: 18px;
   padding-left: 20px;
+}
+
+.input-group {
+  width: 40vw !important;
 }
 
 .btn {
