@@ -5,6 +5,7 @@ from Book import Book
 from webdriver_manager.chrome import ChromeDriverManager
 from Object import Object
 import atexit
+import os
 
 
 class BolDriver():
@@ -55,22 +56,26 @@ class BolDriver():
         self.acceptCookies()
         product_elements = self.__driver.find_elements(By.XPATH, '/html/body/div[1]/main/wsp-async-browse/div/div/div[3]/div/div[2]/div/div[4]/div/ul/li')
         # Iterate through each product element and scrape data
-        for product_element in product_elements:
-            if len(product_info_list) >= ammount:
-                return product_info_list
+        try:
+            for product_element in product_elements:
+                if len(product_info_list) >= ammount:
+                    return product_info_list
+                
+                product_info = {}
             
-            product_info = {}
-        
-            # Scrape title and href
-            product_info['title'] = product_element.find_element_by_css_selector('a.product-title').text
-            product_info['href'] = product_element.find_element_by_css_selector('a.product-title').get_attribute('href')
-            price_element = product_element.find_element_by_css_selector('.promo-price')
-            if price_element:
-                product_info['price'] = price_element.text.replace('\n', '.').replace('.-', '.00')
-            else:
-                product_info['price'] = 'No price available'
-            product_info_list.append(product_info)
-        self.__nextPage()
+                # Scrape title and href
+                product_info['title'] = product_element.find_element_by_css_selector('a.product-title').text
+                product_info['href'] = product_element.find_element_by_css_selector('a.product-title').get_attribute('href')
+                price_element = product_element.find_element_by_css_selector('.promo-price')
+                if price_element:
+                    product_info['price'] = price_element.text.replace('\n', '.').replace('.-', '.00')
+                else:
+                    product_info['price'] = 'No price available'
+                product_info_list.append(product_info)
+            self.__nextPage()
+        except:
+            return self.getItems(ammount)
+
         return self.getItems(ammount, product_info_list)
         
     
